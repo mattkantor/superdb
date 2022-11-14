@@ -1,0 +1,5 @@
+.idea/
+cli/.idea/
+cli/target
+core/target
+core/.idea
