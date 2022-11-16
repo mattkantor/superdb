@@ -16,4 +16,8 @@ fn main() {
     let db = SuperDB {
         records: Arc::new(RwLock::new(SimpleCollection::new()))
     };
+    env_logger::init();
+
+
+
 }

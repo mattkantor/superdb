@@ -1,6 +1,3 @@
-use std::error::Error;
-use std::collections::HashMap;
-
 
 pub struct Comm {
     pub host: String,
@@ -11,34 +8,43 @@ pub struct Comm {
 impl Comm {
     pub fn default() -> Comm {
         Comm {
-            host: "0.0.0.0".to_string(),
-            namespace: "".to_string(),
-            password: "".to_string()
+            host: String::from("0.0.0.0"),
+            namespace: String::from(""),
+            password: String::from(""),
         }
     }
 
     pub fn new() -> Comm {
-        return Comm::default();
+        Comm {
+            host: String::from("0.0.0.0"),
+            namespace: String::from(""),
+            password: String::from(""),
+        }
     }
 
     pub fn get(&self, _key:String) -> String {
-        let mut query_params = HashMap::new();
-        query_params.insert(String::from("action"), String::from("get"));
-        query_params.insert(String::from("key"), String::from(_key));
-        return self.make_request(query_params).unwrap()
+        let query_params = vec![
+            ("action", "get"),
+            ("key", &_key)];  // input encoding
+        let result = self.make_request(query_params);
+        return result;
     }
 
-    pub fn set(&self, _key: String, value:String) -> bool {
-        let mut query_params = HashMap::new();
-        query_params.insert(String::from("action"), String::from("set"));
-        query_params.insert(String::from("key"), String::from(_key));
-        query_params.insert(String::from("value"), String::from(value));
-        return self.make_request(query_params).unwrap()
+    pub fn set(&self, _key: String, value:String) -> String {
+        let query_params = vec![("action","set"),("key",&_key),("value",&value)];
+        let result = self.make_request(query_params);
+        return result;
     }
 
-    fn make_request(&self, qp:HashMap<String, String>) -> Result<(), Box<dyn Error>> {
-        let resp = reqwest::get("https://httpbin.org/ip")
-        .query(qp)?.text()?;
-        return resp;
+    fn make_request(&self, qp:Vec<(&str, &str)>) -> String {
+        let req_client = reqwest::blocking::Client::new();
+        let response = req_client.get("https://httpbin.org/ip").query(&qp).send();
+        let result = match response{
+            Ok(data) => data.text(),
+            Err(e) => panic!("Problem getting data: {:?}", e),
+        };
+        return result.unwrap()
+
     }
+
 }
